@@ -1,0 +1,1000 @@
+{
+  "name": "Focinhos & Caudas | Fluxo completo",
+  "nodes": [
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        288,
+        -464
+      ],
+      "id": "30b77224-d000-4336-a709-7c7a2eb558cb",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "qkWfUCO4086ypYsQ",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let species;\nlet url;\n\nswitch (new Date().getDay()) {\n  case 0:\n    species = \"dog\";\n    url = \"https://api.thedogapi.com/v1/breeds\";\n    break;\n  case 1:\n    species = \"cat\";\n    url = \"https://api.thecatapi.com/v1/breeds\";\n    break;\n  case 2:\n    species = \"dog\";\n    url = \"https://api.thedogapi.com/v1/breeds\";\n    break;\n  case 3:\n    species = \"cat\";\n    url = \"https://api.thecatapi.com/v1/breeds\";\n    break;\n  case 4:\n    species = \"dog\";\n    url = \"https://api.thedogapi.com/v1/breeds\";\n    break;\n  case 5:\n    species = \"cat\";\n    url = \"https://api.thecatapi.com/v1/breeds\";\n    break;\n  case 6:\n    species = \"dog\";\n    url = \"https://api.thedogapi.com/v1/breeds\";\n    break;\n}\n\nreturn {\n  json: {\n    speciesName: species,\n    speciesUrl: url\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        -480
+      ],
+      "id": "08feafd1-cd53-405e-bd32-62d3080b38e1",
+      "name": "Escolha aleatória da espécie"
+    },
+    {
+      "parameters": {
+        "jsCode": "// pega todos os items do node anterior\nconst items = $input.all();\n\n// escolhe um índice aleatório\nconst randomIndex = Math.floor(Math.random() * items.length);\nconst randomItem = items[randomIndex];\n\n// tenta buscar o resultado do node \"Code in JavaScript\"\nconst speciesNode = $('Escolha aleatória da espécie').first().json.speciesName\n\n// retorna o resultado final\nreturn {\n  json: {\n    randomId: randomItem.json.id,\n    randomName: randomItem.json.name,\n    speciesName: speciesNode\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        -608
+      ],
+      "id": "132af16d-fabe-46c3-a0b3-c97415750341",
+      "name": "Escolha aleatória de uma raça"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.species }}",
+                    "rightValue": "=gato",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "df4e6c72-5636-4141-aa89-7fbfd4330a09"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "459d7434-1013-448c-8ccc-5c9feaa8c6c4",
+                    "leftValue": "={{ $json.output.species }}",
+                    "rightValue": "cachorro",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        688,
+        -608
+      ],
+      "id": "b071af48-6550-43d9-9ae7-571baa7c0043",
+      "name": "Cão ou Gato?"
+    },
+    {
+      "parameters": {
+        "promptType": "=define",
+        "text": "=Você é um especialista em cães e gatos.\n\nCrie uma legenda curta, envolvente e natural em português brasileiro sobre a raça informada abaixo.  \nAntes de gerar, traduza o nome da espécie e da raça para o português do Brasil.\n\nEspécie: {{ $json.speciesName }}\nRaça: {{ $json.randomName }}\n\nA legenda será usada em uma postagem de foto da raça.\n\nResponda **somente** com um JSON válido e formatado exatamente assim (sem texto fora das chaves e sem comentários):\n\n{\n  \"species\": \"Espécie em português (cachorro ou gato | sempre em letras minúsculas)\",\n  \"breed\": \"Raça em português\",\n  \"caption\": \"Legenda gerada\"\n}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        304,
+        -672
+      ],
+      "id": "2da3345c-acb8-4864-a03e-f71620137fbc",
+      "name": "AI Agent",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -832,
+        -480
+      ],
+      "id": "42c6bc12-7dec-4e4c-a1de-c6136ac3abde",
+      "name": "Agendamento"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5366bd45-c269-41c7-8630-7350faf9b92e",
+              "name": "id",
+              "value": "={{ $('Escolha aleatória de uma raça').item.json.randomId }}",
+              "type": "string"
+            },
+            {
+              "id": "a04066f9-7c35-40e6-9950-c1291c7f3dd8",
+              "name": "especie",
+              "value": "={{ $('AI Agent').item.json.output.species }}",
+              "type": "string"
+            },
+            {
+              "id": "00cf7a70-0c43-4b6e-871a-adb7f5d738e3",
+              "name": "raca",
+              "value": "={{ $('AI Agent').item.json.output.breed }}",
+              "type": "string"
+            },
+            {
+              "id": "e98b9fed-87c6-453d-89c8-d3d056909824",
+              "name": "legenda",
+              "value": "={{ $('AI Agent').item.json.output.caption }}",
+              "type": "string"
+            },
+            {
+              "id": "aa265fc3-7979-4c33-8273-73a2377ea848",
+              "name": "url",
+              "value": "={{ $json.url }}",
+              "type": "string"
+            },
+            {
+              "id": "e11fb784-e043-48ce-a032-3dffcfd158ef",
+              "name": "data",
+              "value": "={{ new Date().toDateTime().format('dd-MM-yyyy HH:mm:ss') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1328,
+        -608
+      ],
+      "id": "2a387b08-b4c0-4a0c-91ec-571581862cd3",
+      "name": "Dados para postagem"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "328eb3b3-e177-471d-8175-cbe9a362ae32",
+              "leftValue": "={{ $json.url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "c2f1958f-d6fc-4f6b-83d0-16a375c846da",
+              "leftValue": "={{ $json.url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1568,
+        -480
+      ],
+      "id": "a844a680-7362-4484-a2a0-073c3db62fd4",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"species\": \"Espécie em português (cachorro ou gato | sempre em letras minúsculas)\",\n  \"breed\": \"Raça em português\",\n  \"caption\": \"Legenda gerada\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        -464
+      ],
+      "id": "6a75b886-8a2e-40b8-9999-d2cfc14ac79c",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1hZ9TwpNCNcT6uhdwEE-tylLmAvhpXlOzbIodGSxKLWg",
+          "mode": "list",
+          "cachedResultName": "Projetos n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1hZ9TwpNCNcT6uhdwEE-tylLmAvhpXlOzbIodGSxKLWg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 383482082,
+          "mode": "list",
+          "cachedResultName": "Dogs & Cats",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1hZ9TwpNCNcT6uhdwEE-tylLmAvhpXlOzbIodGSxKLWg/edit#gid=383482082"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('If').item.json.id }}",
+            "especie": "={{ $('If').item.json.especie }}",
+            "raca": "={{ $('If').item.json.raca }}",
+            "legenda": "={{ $('If').item.json.legenda }}",
+            "url": "={{ $('If').item.json.url }}",
+            "data": "={{ $('If').item.json.data }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "especie",
+              "displayName": "especie",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raca",
+              "displayName": "raca",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "legenda",
+              "displayName": "legenda",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data",
+              "displayName": "data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2512,
+        -480
+      ],
+      "id": "88b3b640-43b7-48a4-9e10-985bdc5ad131",
+      "name": "Google Planilhas API | Salvar dados",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bxsIkjzuC2Y5JLpt",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## AGENDAMENTO\n**Todos os dias às 8h** ",
+        "height": 528,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -912,
+        -848
+      ],
+      "typeVersion": 1,
+      "id": "043c669a-ae25-406f-897a-f89d19319fff",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## MONTAGEM\n**Uma espécie (cão ou gato) e uma raça são escolhidos, utilizando APIs, e enviado a informação para o nó de IA** ",
+        "height": 528,
+        "width": 848,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -640,
+        -848
+      ],
+      "typeVersion": 1,
+      "id": "100e8273-d1c5-4067-a960-a18b3754c3be",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## GERAÇÃO DE LEGENDA\n**O nó de IA é responsável por criar uma legenda baseada na raça escolhida e formatar a saída em json para ser utilizada na requisição API.**",
+        "height": 528,
+        "width": 384,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        240,
+        -848
+      ],
+      "typeVersion": 1,
+      "id": "128b7508-96dc-411e-a854-c28d7512549f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## REQUISIÇÃO API\n**As informações geradas pelos nós anteriores são utilizadas para realizar a requisição à API, para obter uma imagem da raça escolhida.** ",
+        "height": 528,
+        "width": 832,
+        "color": "#662514"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        656,
+        -848
+      ],
+      "typeVersion": 1,
+      "id": "6ebe1d06-9c0e-4676-906e-4b8d001dd2a7",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## VERIFICAÇÃO\n**Uma verificação é realizada para o caso da raça escolhida não possuir uma foto. Em caso negativo, o fluxo é direcionado para uma nova escolha de raça.**",
+        "height": 528,
+        "width": 208,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1520,
+        -848
+      ],
+      "typeVersion": 1,
+      "id": "3e1b7410-f9aa-4167-9ac5-a9ebf9c03756",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## POSTAGEM\n**Utilizado os dados para postagem, criados nos nós anteriores, uma requisição é realizada à API do Facebook, para realizar a postagem no Instagram.** ",
+        "height": 528,
+        "width": 656,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1760,
+        -848
+      ],
+      "typeVersion": 1,
+      "id": "c3e76e58-c089-4950-a0cc-b1ebbca45164",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## SALVANDO OS DADOS\n**Os dados da postagem são registrado em uma planilha com a API do Google Sheets.**",
+        "height": 528,
+        "width": 224,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2448,
+        -848
+      ],
+      "typeVersion": 1,
+      "id": "0bf332f6-b688-4743-bafc-3c51e5add948",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.speciesName }}",
+                    "rightValue": "dog",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "89ce5b74-0e85-42a3-bef2-4368900350ff"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "26c1b46a-3ad9-490e-873f-88374b69334a",
+                    "leftValue": "={{ $json.speciesName }}",
+                    "rightValue": "cat",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -400,
+        -608
+      ],
+      "id": "7c728072-0c32-4f10-82f6-c3c02fab5fd4",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "url": "https://api.thecatapi.com/v1/images/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "breed_ids",
+              "value": "={{ $('Escolha aleatória de uma raça').item.json.randomId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        992,
+        -704
+      ],
+      "id": "20892d47-e8d8-4a14-8606-32890ac5b6ea",
+      "name": "TheCatAPI | Requisição e imagem da raça",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "VFl2i0pk2N6OXy3k",
+          "name": "CatAPI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.thedogapi.com/v1/breeds/{{ $('Escolha aleatória de uma raça').item.json.randomId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        880,
+        -512
+      ],
+      "id": "7783b0ee-037b-4b54-ad50-d1ccfa8e75ea",
+      "name": "TheDogAPI | Requisição",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0cch4gMPgsE8XytQ",
+          "name": "TheDogAPI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.thedogapi.com/v1/images/{{ $json.reference_image_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1104,
+        -512
+      ],
+      "id": "92d6f429-cdaf-4c4d-8feb-db71202bf078",
+      "name": "TheDogAPI | Imagem da raça",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0cch4gMPgsE8XytQ",
+          "name": "TheDogAPI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.speciesUrl }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -176,
+        -704
+      ],
+      "id": "9fb882cf-0b6a-413a-a9bb-27d768b0c010",
+      "name": "TheDogAPI | Relação das raças",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0cch4gMPgsE8XytQ",
+          "name": "TheDogAPI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.speciesUrl }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -176,
+        -512
+      ],
+      "id": "302614fd-f93b-45bf-b468-728803337bad",
+      "name": "TheCatAPI | Relação das raças"
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2048,
+        -480
+      ],
+      "id": "b7142fe9-4deb-4a9e-b9b9-6ad0f2dccbbb",
+      "name": "Wait",
+      "webhookId": "b7dd0e33-cef5-4b65-bda0-b03afb217153"
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "17841478844355744",
+        "edge": "media",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "image_url",
+                "value": "={{ $json.url }}"
+              },
+              {
+                "name": "caption",
+                "value": "={{ $json.legenda }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        1824,
+        -480
+      ],
+      "id": "00601ea5-6cb6-49c1-adae-e1a1954d769a",
+      "name": "Criação do conteiner",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "3Om2E0oCgWBEVHWX",
+          "name": "Facebook Graph API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "17841478844355744",
+        "edge": "media_publish",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "creation_id",
+                "value": "={{ $json.id }}"
+              },
+              {
+                "name": "image_url",
+                "value": "={{ $('If').item.json.url }}"
+              },
+              {
+                "name": "caption",
+                "value": "={{ $('If').item.json.legenda }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        2272,
+        -480
+      ],
+      "id": "ea4fd4d2-df3b-4629-93f7-af5b096693dd",
+      "name": "Facebook Graph API",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "3Om2E0oCgWBEVHWX",
+          "name": "Facebook Graph API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## REQUISITOS\n\n- API Google Sheets\n- API Google Gemini\n- API TheDogAPI\n- API TheCatAPI\n- API Facebook Graph",
+        "height": 208,
+        "width": 288,
+        "color": "#A3A000"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -912,
+        -1168
+      ],
+      "id": "1e68aed3-2216-4a03-9a78-a7962bcb1b7c",
+      "name": "Sticky Note7"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Escolha aleatória da espécie": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Escolha aleatória de uma raça": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cão ou Gato?": {
+      "main": [
+        [
+          {
+            "node": "TheCatAPI | Requisição e imagem da raça",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TheDogAPI | Requisição",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Cão ou Gato?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agendamento": {
+      "main": [
+        [
+          {
+            "node": "Escolha aleatória da espécie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados para postagem": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Criação do conteiner",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Escolha aleatória da espécie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Planilhas API | Salvar dados": {
+      "main": [
+        []
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "TheDogAPI | Relação das raças",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TheCatAPI | Relação das raças",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TheCatAPI | Requisição e imagem da raça": {
+      "main": [
+        [
+          {
+            "node": "Dados para postagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TheDogAPI | Requisição": {
+      "main": [
+        [
+          {
+            "node": "TheDogAPI | Imagem da raça",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TheDogAPI | Imagem da raça": {
+      "main": [
+        [
+          {
+            "node": "Dados para postagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TheDogAPI | Relação das raças": {
+      "main": [
+        [
+          {
+            "node": "Escolha aleatória de uma raça",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TheCatAPI | Relação das raças": {
+      "main": [
+        [
+          {
+            "node": "Escolha aleatória de uma raça",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criação do conteiner": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Facebook Graph API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook Graph API": {
+      "main": [
+        [
+          {
+            "node": "Google Planilhas API | Salvar dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bce4bc6c-d05c-40d8-ae0d-acf5fc802a9f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b337309c9161ce3cc210ac117c28cac59a5df703896ab4efb3a143f5eb6c9a69"
+  },
+  "id": "VjgjmmuQq3EdEkZO",
+  "tags": []
+}
