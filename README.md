@@ -41,23 +41,7 @@ O sistema é totalmente **self-hosted utilizando n8n**, implantado em infraestru
 ---
 
 ## 🏗 Arquitetura do Workflow
-Agendamento Diário (8h)
-↓
-Seleção de Espécie (Cão/Gato)
-↓
-Consulta de Raças (API Pública)
-↓
-Seleção Aleatória de Raça
-↓
-Geração de Legenda com IA (JSON Estruturado)
-↓
-Busca de Imagem
-↓
-Criação do Container de Mídia
-↓
-Publicação do Post
-↓
-Registro em Google Sheets
+![DIAGRAMA](images/diagrama.png)
 
 ---
 
