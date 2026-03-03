@@ -41,7 +41,7 @@ O sistema é totalmente **self-hosted utilizando n8n**, implantado em infraestru
 ---
 
 ## 🏗 Arquitetura do Workflow
-![DIAGRAMA](images/diagrama.png)
+![Diagrama](images/Diagrama.gif)
 
 ---
 
